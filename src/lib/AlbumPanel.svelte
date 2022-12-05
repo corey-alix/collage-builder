@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte"
   import { loadAlbum } from "./googleApi"
+  import PhotoPanel from "./PhotoPanel.svelte"
   export let albums: Array<gapi.client.photoslibrary.Album> = []
   const dispatch = createEventDispatcher()
   let loaded = new Set<string>()
@@ -8,6 +9,9 @@
 
 <div class="grid">
   {#each albums as album, index}
+    <div class="span-all-columns" class:loaded={loaded.has(album.id)}>
+      <PhotoPanel {album} loaded={loaded.has(album.id)} />
+    </div>
     <div class="albumPanel" class:loaded={loaded.has(album.id)}>
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div class="thumbnail">
@@ -15,7 +19,6 @@
           src={album.coverPhotoBaseUrl}
           alt={album.title}
           on:click={() => {
-            dispatch("loadMediaItems", { album })
             loaded.add(album.id)
             loaded = loaded
           }}
@@ -64,6 +67,13 @@
     row-gap: 1em;
     column-gap: 1em;
     width: 100%;
+  }
+
+  .span-all-columns:not(.loaded) {
+    display: none;
+  }
+  .span-all-columns {
+    grid-column-start: span var(--column-count);
   }
 
   .albumPanel {

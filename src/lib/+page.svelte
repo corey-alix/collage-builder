@@ -13,35 +13,21 @@
   $: isAuthorized = false
   let isGoogleApiInitialized = false
   let albums: Array<gapi.client.photoslibrary.Album> = []
-  let photoPanels: Array<{
-    album: gapi.client.photoslibrary.Album
-    mediaItems: Array<gapi.client.photoslibrary.MediaItem>
-    nextPageToken: string
-  }> = []
 
   ;(async function () {
     await authenticateUser()
     isGoogleApiInitialized = true
-    await createTokenClient()
-    isAuthorized = true
-    albums = await listAllAlbums()
   })()
 
   async function handleAuthClick() {
     await createTokenClient()
     isAuthorized = true
+    albums = await listAllAlbums()
   }
 
   function handleSignoutClick() {
     signout()
     isAuthorized = false
-  }
-
-  function addToPhotoPanels(
-    album: gapi.client.photoslibrary.Album,
-    response: any
-  ) {
-    photoPanels = [...photoPanels, { album, ...response }]
   }
 </script>
 
@@ -78,21 +64,7 @@
     />
   </section>
   <section class="workspace if-connected">
-    {#each photoPanels as photoPanel}
-      <PhotoPanel {photoPanel} />
-    {/each}
-    <AlbumPanel
-      {albums}
-      on:unloadMediaItems={async (event) => {
-        // remove album
-        const albumToRemove = event.detail.album
-        photoPanels = photoPanels.filter((p) => p.album !== albumToRemove)
-      }}
-      on:loadMediaItems={async (event) => {
-        const response = await loadMediaItems(event.detail.album)
-        addToPhotoPanels(event.detail.album, response)
-      }}
-    />
+    <AlbumPanel {albums} />
   </section>
 </section>
 

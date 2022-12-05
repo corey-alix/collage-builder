@@ -1,29 +1,25 @@
 <script lang="ts">
   import { loadMoreMediaItems } from "./googleApi"
 
-  export let photoPanel: {
-    album: gapi.client.photoslibrary.Album
-  } & {
-    mediaItems: Array<gapi.client.photoslibrary.MediaItem>
-    nextPageToken: string
-  }
+  export let album: gapi.client.photoslibrary.Album
+  export let loaded = false
+  let nextPageToken = ""
+  let mediaItems: Array<gapi.client.photoslibrary.MediaItem> = []
 
-  $: sortedImages = !photoPanel
-    ? []
-    : [...photoPanel.mediaItems].filter((a) => !!a.mediaMetadata.photo)
+  $: sortedImages = [...mediaItems].filter((a) => !!a.mediaMetadata.photo)
 
   async function loadMediaItems() {
-    const response = await loadMoreMediaItems(photoPanel)
-    photoPanel!.nextPageToken = response.result.nextPageToken || ""
-    photoPanel!.mediaItems = <any>[
-      ...photoPanel!.mediaItems,
-      ...response.result.mediaItems!,
-    ]
+    const response = await loadMoreMediaItems(album.id, nextPageToken)
+    nextPageToken = response.result.nextPageToken || ""
+    mediaItems = [...mediaItems, ...response.result.mediaItems!]
     return response.result
   }
+
+  album && loadMediaItems()
 </script>
 
 <div class="grid">
+  <q class="span-all-columns">{album.title}</q>
   {#each sortedImages as image}
     <div
       class="grid-item"
@@ -34,12 +30,12 @@
       <img src={image.baseUrl + "=w256"} alt={image.filename} />
     </div>
   {/each}
+  {#if nextPageToken}
+    <button class="more" on:click={() => loadMediaItems()}
+      >Load more from <q>{album.title}</q></button
+    >
+  {/if}
 </div>
-{#if photoPanel?.nextPageToken}
-  <button class="more" on:click={() => loadMediaItems()}
-    >Load more from <q>{photoPanel.album.title}</q></button
-  >
-{/if}
 
 <style>
   * {
@@ -121,5 +117,9 @@
 
   .two-rows {
     grid-row-start: span 2;
+  }
+
+  .span-all-columns {
+    grid-column-start: span var(--column-count);
   }
 </style>
