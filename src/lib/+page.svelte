@@ -2,19 +2,12 @@
   import Logo from "./Logo.svelte"
   import PhotoPanel from "./PhotoPanel.svelte"
   import AlbumPanel from "./AlbumPanel.svelte"
+  import { GoogleApi } from "./googleApi"
 
-  // where to put these?
-  const API_KEY = "AIzaSyDTmNCr5okFZBbKsCtBSkPL_KJ1-gnvv1c"
-  const CLIENT_ID =
-    "164034047266-d9694hn1nmpm047bl7cbusqovq6s2ncp.apps.googleusercontent.com"
-  const SCOPES = "https://www.googleapis.com/auth/photoslibrary.readonly"
-  const DISCOVERY_DOC =
-    "https://www.googleapis.com/discovery/v1/apis/photoslibrary/v1/rest"
+  const photoApi = new GoogleApi()
 
-  let tokenClient = null as any
-  $: gapiInited = false
-  $: gisInited = false
   $: isAuthorized = false
+  let isGoogleApiInitialized = false
   let albums: Array<gapi.client.photoslibrary.Album> = []
   let photoPanels: Array<{
     album: gapi.client.photoslibrary.Album
@@ -22,41 +15,20 @@
     nextPageToken: string
   }> = []
 
+  async function doit() {
+    await photoApi.authenticateUser()
+    isGoogleApiInitialized = true
+    await photoApi.createTokenClient()
+    isAuthorized = true
+    const data = await listAlbums()
+    albums = <any>data.albums
+  }
+
+  doit()
+
   async function handleAuthClick() {
-    const p = new Promise<void>((good, bad) => {
-      gapi.load("client", async () => {
-        try {
-          gapi.client
-            .init({
-              apiKey: API_KEY,
-              discoveryDocs: [DISCOVERY_DOC],
-            })
-            .then((authResult) => {
-              gapiInited = true
-              good()
-            })
-        } catch (ex) {
-          bad(ex)
-        }
-      })
-    })
-
-    tokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: CLIENT_ID,
-      scope: SCOPES,
-      callback: async (response: any) => {
-        if (response.error) {
-          throw response
-        }
-        isAuthorized = true
-        const data = await listAlbums()
-        albums = <any>data.albums
-      },
-    })
-
-    await p
-
-    tokenClient.requestAccessToken({ prompt: "" })
+    await photoApi.createTokenClient()
+    isAuthorized = true
   }
 
   function handleSignoutClick() {
@@ -102,7 +74,7 @@
 <section
   class="app"
   class:is-connected={isAuthorized}
-  class:can-connect={gisInited && gapiInited}
+  class:can-connect={isGoogleApiInitialized}
 >
   <div class="if-not-connected"><Logo /></div>
   <section class="if-connected">
