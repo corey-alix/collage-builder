@@ -1,14 +1,8 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte"
+  import { loadAlbum } from "./googleApi"
   export let albums: Array<gapi.client.photoslibrary.Album> = []
   const dispatch = createEventDispatcher()
-
-  async function loadAlbum(id: string) {
-    const response = await gapi.client.photoslibrary.albums.get({
-      albumId: id,
-    })
-    return response.result
-  }
 </script>
 
 <div class="grid">

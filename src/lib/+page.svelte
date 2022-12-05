@@ -2,9 +2,13 @@
   import Logo from "./Logo.svelte"
   import PhotoPanel from "./PhotoPanel.svelte"
   import AlbumPanel from "./AlbumPanel.svelte"
-  import { GoogleApi } from "./googleApi"
-
-  const photoApi = new GoogleApi()
+  import {
+    authenticateUser,
+    createTokenClient,
+    listAlbums,
+    loadMediaItems,
+    signout,
+  } from "./googleApi"
 
   $: isAuthorized = false
   let isGoogleApiInitialized = false
@@ -15,47 +19,23 @@
     nextPageToken: string
   }> = []
 
-  async function doit() {
-    await photoApi.authenticateUser()
+  ;(async function () {
+    await authenticateUser()
     isGoogleApiInitialized = true
-    await photoApi.createTokenClient()
+    await createTokenClient()
     isAuthorized = true
     const data = await listAlbums()
     albums = <any>data.albums
-  }
-
-  doit()
+  })()
 
   async function handleAuthClick() {
-    await photoApi.createTokenClient()
+    await createTokenClient()
     isAuthorized = true
   }
 
   function handleSignoutClick() {
-    const token = gapi.client.getToken()
-    if (token !== null) {
-      google.accounts.oauth2.revoke(token.access_token)
-      gapi.client.setToken(null)
-    }
+    signout()
     isAuthorized = false
-  }
-
-  async function listAlbums() {
-    const response = await gapi.client.photoslibrary.albums.list({
-      pageSize: 20,
-      fields: "albums(id,title)",
-    })
-    return response.result
-  }
-
-  async function loadMediaItems(album: gapi.client.photoslibrary.Album) {
-    const response = await gapi.client.photoslibrary.mediaItems.search({
-      resource: {
-        pageSize: 10,
-        albumId: album.id,
-      },
-    })
-    return response.result
   }
 
   function addToPhotoPanels(

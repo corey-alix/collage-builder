@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { loadMoreMediaItems } from "./googleApi"
+
   export let photoPanel: {
     album: gapi.client.photoslibrary.Album
   } & {
@@ -11,13 +13,7 @@
     : [...photoPanel.mediaItems].filter((a) => !!a.mediaMetadata.photo)
 
   async function loadMediaItems() {
-    const response = await gapi.client.photoslibrary.mediaItems.search({
-      resource: {
-        albumId: photoPanel.album.id,
-        pageSize: 10,
-        pageToken: photoPanel.nextPageToken,
-      },
-    })
+    const response = await loadMoreMediaItems(photoPanel)
     photoPanel!.nextPageToken = response.result.nextPageToken || ""
     photoPanel!.mediaItems = <any>[
       ...photoPanel!.mediaItems,
