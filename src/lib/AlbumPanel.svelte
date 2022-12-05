@@ -94,7 +94,6 @@
     border: 6px solid var(--border-color);
     border-radius: 3px;
     background-color: var(--background-color);
-    font-size: 0.7cqw;
     height: 100qcw;
   }
 
