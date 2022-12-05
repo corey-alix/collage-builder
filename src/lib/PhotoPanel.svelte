@@ -2,7 +2,6 @@
   import { loadMoreMediaItems } from "./googleApi"
 
   export let album: gapi.client.photoslibrary.Album
-  export let loaded = false
   let nextPageToken = ""
   let mediaItems: Array<gapi.client.photoslibrary.MediaItem> = []
 
@@ -72,7 +71,6 @@
   .grid {
     display: grid;
     grid-template-columns: repeat(var(--column-count), 1fr);
-    padding: 1em;
     row-gap: 1em;
     column-gap: 1em;
     width: 100%;
@@ -109,6 +107,7 @@
     align-self: center;
     padding: 1em;
     border: 1px solid var(--border-color);
+    grid-column-start: 1;
   }
 
   .more:hover {

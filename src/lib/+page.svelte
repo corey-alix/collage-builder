@@ -90,7 +90,7 @@
   }
 
   .workspace {
-    width: 75vw;
+    width: 95vw;
     border: 1px solid white;
     border-radius: 1em;
     margin-top: 1em;
