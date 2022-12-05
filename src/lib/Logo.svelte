@@ -224,7 +224,7 @@
 
   .logo-panel > .img10.play {
     background-position: 8px 0px;
-    background-image: url(../public/google_photos_icon.png);
+    background-image: url(/google_photos_icon.png);
     background-color: white !important;
     background-repeat: no-repeat;
     background-size: contain;
