@@ -103,7 +103,6 @@
   }
 
   .thumbnail.unloaded {
-    font-size: 1cqw;
     position: relative;
     container-type: inline-size;
   }
@@ -112,16 +111,20 @@
     position: absolute;
     bottom: calc(50% - 15cqw);
     left: calc(50% - 15cqw);
-    border: 1px solid white;
+    outline: 1px solid var(--border-color);
     width: 30cqw;
     height: 30cqw;
     padding-top: 10cqw;
     border-radius: 50%;
+    font-size: 10cqw;
+    cursor: pointer;
   }
 
-  .thumbnail.unloaded div:hover {
-    box-shadow: 0 0 2px 2px white;
-    cursor: pointer;
+  .thumbnail.unloaded:hover div {
+    outline: 2px solid white;
+    box-shadow: 0.5cqw -0.2cqh 4cqw 2cqw white;
+    padding-top: 7.5cqw;
+    font-size: 15cqw;
   }
 
   .thumbnail > img {
