@@ -18,5 +18,9 @@
     "tslib": "^2.4.0",
     "typescript": "^4.6.4",
     "vite": "^3.2.3"
+  },
+  "dependencies": {
+    "@types/gapi": "^0.0.43",
+    "@types/gapi.client.photoslibrary": "^1.0.0"
   }
 }
