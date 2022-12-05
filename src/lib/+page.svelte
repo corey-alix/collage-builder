@@ -14,12 +14,9 @@
   let isGoogleApiInitialized = false
   let albums: Array<gapi.client.photoslibrary.Album> = []
 
-  ;(async function () {
+  async function handleAuthClick() {
     await authenticateUser()
     isGoogleApiInitialized = true
-  })()
-
-  async function handleAuthClick() {
     await createTokenClient()
     isAuthorized = true
     albums = await listAllAlbums()
