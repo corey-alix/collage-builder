@@ -1,9 +1,9 @@
 <script lang="ts">
-  import Logo from "./lib/Logo.svelte"
+  import App from "./lib/+page.svelte"
 </script>
 
 <main>
-  <Logo />
+  <App />
 </main>
 
 <style>
