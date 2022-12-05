@@ -45,10 +45,19 @@ export function createTokenClient() {
     return p;
 }
 
-export async function listAlbums() {
+export async function listAllAlbums() {
+    let { albums, nextPageToken } = await listAlbums();
+    while (nextPageToken) {
+        const moreAlbums = await listAlbums(nextPageToken);
+        albums.splice(albums.length, 0, ...moreAlbums.albums);
+        nextPageToken = moreAlbums.nextPageToken;
+    }
+    return albums;
+}
+
+export async function listAlbums(pageToken?: string) {
     const response = await gapi.client.photoslibrary.albums.list({
-        pageSize: 20,
-        fields: "albums(id,title)",
+        pageToken
     })
     return response.result
 }

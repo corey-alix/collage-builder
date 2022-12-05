@@ -5,7 +5,7 @@
   import {
     authenticateUser,
     createTokenClient,
-    listAlbums,
+    listAllAlbums,
     loadMediaItems,
     signout,
   } from "./googleApi"
@@ -24,8 +24,7 @@
     isGoogleApiInitialized = true
     await createTokenClient()
     isAuthorized = true
-    const data = await listAlbums()
-    albums = <any>data.albums
+    albums = await listAllAlbums()
   })()
 
   async function handleAuthClick() {
