@@ -2,6 +2,8 @@
 
 Svelte demo app that integrates with Google Photos
 
+The purpose is to learn Svelte and the Google API for Google Photos but I also want to build a voice and REPL tool for building collages
+
 ## Build the scaffolding
 
 I used create vite and followed the prompts, I selected the "Svelte" and "Typescript"

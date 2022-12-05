@@ -3,39 +3,24 @@
   import { loadAlbum } from "./googleApi"
   export let albums: Array<gapi.client.photoslibrary.Album> = []
   const dispatch = createEventDispatcher()
+  let loaded = new Set<string>()
 </script>
 
 <div class="grid">
   {#each albums as album, index}
-    <div class="albumPanel">
+    <div class="albumPanel" class:loaded={loaded.has(album.id)}>
       <!-- svelte-ignore a11y-click-events-have-key-events -->
-      {#if album.coverPhotoBaseUrl}
-        <div class="thumbnail">
-          <img
-            src={album.coverPhotoBaseUrl}
-            alt={album.title}
-            on:click={() => {
-              album.coverPhotoBaseUrl = ""
-              dispatch("unloadMediaItems", { album })
-            }}
-          />
-        </div>
-      {/if}
-      {#if !album.coverPhotoBaseUrl}
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <div
-          class="thumbnail unloaded"
-          on:click={async () => {
-            if (!album.coverPhotoBaseUrl) {
-              const response = loadAlbum(album.id)
-              album.coverPhotoBaseUrl = (await response).coverPhotoBaseUrl || ""
-              dispatch("loadMediaItems", { album })
-            }
+      <div class="thumbnail">
+        <img
+          src={album.coverPhotoBaseUrl}
+          alt={album.title}
+          on:click={() => {
+            dispatch("loadMediaItems", { album })
+            loaded.add(album.id)
+            loaded = loaded
           }}
-        >
-          <div>{index}</div>
-        </div>
-      {/if}
+        />
+      </div>
       <div>{album.title}</div>
     </div>
   {/each}
@@ -89,6 +74,10 @@
     border-radius: 3px;
     background-color: var(--background-color);
     height: 100qcw;
+  }
+
+  .albumPanel.loaded {
+    display: none;
   }
 
   .thumbnail {
