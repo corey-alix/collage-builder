@@ -95,7 +95,7 @@
 </script>
 
 <svelte:head>
-  <title>just.beforeNavigate.collage</title>
+  <title>just.be.collage</title>
   <meta name="description" content="Google Photos Integration" />
 </svelte:head>
 
