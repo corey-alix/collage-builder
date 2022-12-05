@@ -97,6 +97,8 @@
   .grid-item > img {
     border-radius: var(--border-radius);
     width: 100%;
+    max-height: 90vh;
+    object-fit: contain;
   }
 
   .image-caption {
