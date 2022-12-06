@@ -5,7 +5,9 @@
   let nextPageToken = ""
   let mediaItems: Array<gapi.client.photoslibrary.MediaItem> = []
 
-  $: sortedImages = [...mediaItems].filter((a) => !!a.mediaMetadata.photo)
+  $: sortedImages = [...mediaItems]
+    .filter((a) => !!a.mediaMetadata.photo)
+    .map((a) => ({ q: "=w256", ...a }))
 
   async function loadMediaItems() {
     const response = await loadPhotos(album.id, nextPageToken)
@@ -26,7 +28,14 @@
     >
       <!-- svelte-ignore a11y-label-has-associated-control -->
       <label class="image-caption">{image.filename}</label>
-      <img src={image.baseUrl + "=w256"} alt={image.filename} />
+      <!-- svelte-ignore a11y-click-events-have-key-events -->
+      <img
+        src={image.baseUrl + image.q}
+        alt={image.filename}
+        on:click={() => {
+          image.q = "=w512"
+        }}
+      />
     </div>
   {/each}
   {#if nextPageToken}
