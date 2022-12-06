@@ -22,7 +22,9 @@
 <div class="grid">
   <q class="span-all-columns">{album.title}</q>
   {#each sortedImages as image}
+    <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
     <div
+      tabindex="0"
       class="grid-item"
       class:two-rows={image.mediaMetadata.height > image.mediaMetadata.width}
     >
@@ -91,6 +93,10 @@
     background-color: var(--background-color);
     padding: 3px;
     container-type: inline-size;
+  }
+
+  .grid-item:focus {
+    outline: 3px solid var(--border-color);
   }
 
   .grid-item > img {

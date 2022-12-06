@@ -12,7 +12,7 @@
     <div class="span-all-columns" class:loaded={loaded.has(album.id)}>
       <PhotoPanel {album} />
     </div>
-    <div class="albumPanel" class:loaded={loaded.has(album.id)}>
+    <div tabIndex="0" class="albumPanel" class:loaded={loaded.has(album.id)}>
       <!-- svelte-ignore a11y-click-events-have-key-events -->
       <div class="thumbnail">
         <img
@@ -80,10 +80,14 @@
     display: grid;
     grid-template-rows: 10rem 2rem;
     text-align: center;
-    border: 6px solid var(--border-color);
+    border: 3px solid var(--border-color);
     border-radius: 3px;
     background-color: var(--background-color);
     height: 100qcw;
+  }
+
+  .albumPanel:focus {
+    outline: 3px solid var(--border-color);
   }
 
   .albumPanel.loaded {
