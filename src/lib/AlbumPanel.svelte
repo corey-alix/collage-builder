@@ -10,7 +10,7 @@
 <div class="grid">
   {#each albums as album, index}
     <div class="span-all-columns" class:loaded={loaded.has(album.id)}>
-      <PhotoPanel {album} loaded={loaded.has(album.id)} />
+      <PhotoPanel {album} />
     </div>
     <div class="albumPanel" class:loaded={loaded.has(album.id)}>
       <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -92,31 +92,6 @@
 
   .thumbnail {
     padding: 3px;
-  }
-
-  .thumbnail.unloaded {
-    position: relative;
-    container-type: inline-size;
-  }
-
-  .thumbnail.unloaded div {
-    position: absolute;
-    bottom: calc(50% - 15cqw);
-    left: calc(50% - 15cqw);
-    outline: 1px solid var(--border-color);
-    width: 30cqw;
-    height: 30cqw;
-    padding-top: 10cqw;
-    border-radius: 50%;
-    font-size: 10cqw;
-    cursor: pointer;
-  }
-
-  .thumbnail.unloaded:hover div {
-    outline: 2px solid white;
-    box-shadow: 0.5cqw -0.2cqh 4cqw 2cqw white;
-    padding-top: 7.5cqw;
-    font-size: 15cqw;
   }
 
   .thumbnail > img {
