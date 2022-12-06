@@ -12,62 +12,57 @@
       return play <= 10
     }
 
-    await sleep(100)
-    while (doit()) await sleep(200)
+    while (doit()) await sleep(100)
   })()
 </script>
 
 <div class="applogo">
   <div class="bold center-text main-title rotate-text">just.be.collage</div>
   <div class="sub-title">
-    <div class:scale-0={true} class:effect-scale-1={play >= 5}>
-      for use with
-      <google>Google Photos</google>
-    </div>
+    for use with
+    <google>Google Photos</google>
   </div>
-  <div class:effect-zoom-out={play >= 5}>
-    <div class:effect-skew={play >= 10}>
-      <div class="logo-panel logo-grid" class:effect-shadow={play >= 7}>
+  <div class:effect-skew={play >= 5}>
+    <div class="logo-panel logo-grid">
+      <div
+        class="col1 logo-panel no-right-border"
+        class:effect-paint-1={play >= 1}
+      >
+        <div class="selector">1</div>
+      </div>
+      <div class="col2 logo-panel no-border translucent">
+        <div class="logo-panel no-right-border">
+          <div class="selector">2</div>
+        </div>
+        <div class="logo-panel with-border" class:effect-paint-2={play >= 2}>
+          <div class="selector">3</div>
+        </div>
+        <div class="logo-panel no-right-border no-top-border">
+          <div class="selector">4</div>
+        </div>
+        <div class="logo-panel no-top-border">
+          <div class="selector">5</div>
+        </div>
+      </div>
+      <div class="logo-panel no-border translucent">
+        <div class="logo-panel no-right-border no-top-border">
+          <div class="selector">6</div>
+        </div>
+        <div class="logo-panel no-right-border no-top-border">
+          <div class="selector">7</div>
+        </div>
         <div
-          class="col1 logo-panel no-right-border"
-          class:effect-paint-1={play >= 1}
+          class="logo-panel no-right-border no-top-border"
+          class:effect-paint-2={play >= 3}
         >
-          <div class="selector">1</div>
+          <div class="selector">8</div>
         </div>
-        <div class="col2 logo-panel no-border translucent">
-          <div class="logo-panel no-right-border">
-            <div class="selector">2</div>
-          </div>
-          <div class="logo-panel with-border" class:effect-paint-2={play >= 2}>
-            <div class="selector">3</div>
-          </div>
-          <div class="logo-panel no-right-border no-top-border">
-            <div class="selector">4</div>
-          </div>
-          <div class="logo-panel no-top-border">
-            <div class="selector">5</div>
-          </div>
+        <div class="logo-panel no-top-border no-right-border no-top-border">
+          <div class="selector">9</div>
         </div>
-        <div class="logo-panel no-border translucent">
-          <div class="logo-panel no-right-border no-top-border">
-            <div class="selector">6</div>
-          </div>
-          <div class="logo-panel no-right-border no-top-border">
-            <div class="selector">7</div>
-          </div>
-          <div
-            class="logo-panel no-right-border no-top-border"
-            class:effect-paint-2={play >= 3}
-          >
-            <div class="selector">8</div>
-          </div>
-          <div class="logo-panel no-top-border no-right-border no-top-border">
-            <div class="selector">9</div>
-          </div>
-        </div>
-        <div class="logo-panel no-top-border" class:effect-paint-4={play >= 4}>
-          <div class="selector">10</div>
-        </div>
+      </div>
+      <div class="logo-panel no-top-border" class:effect-paint-4={play >= 4}>
+        <div class="selector">10</div>
       </div>
     </div>
   </div>
@@ -159,19 +154,19 @@
   }
 
   .applogo > .sub-title {
-    font-size: 8cqw;
+    font-size: 6cqw;
     text-align: center;
   }
 
   google {
-    font-size: 6cqw;
+    font-size: 5cqw;
     font-display: swap;
   }
 
   .logo-grid {
-    width: 70cqw;
-    height: 50cqw;
-    margin-left: calc(50% - 70cqw / 2);
+    width: 30cqw;
+    height: 30cqw;
+    margin-left: calc(50% - 30cqw / 2);
   }
 
   .applogo .logo-panel {
@@ -194,34 +189,12 @@
 
   .applogo .logo-panel .selector {
     font-size: 3cqw;
-    color: black;
+    color: transparent;
     text-align: left;
   }
 
-  .scale-0 {
-    transform: scale(0);
-  }
-
-  .effect-scale-1 {
-    animation-name: scale-1;
-    animation-fill-mode: forwards;
-    animation-duration: 1000ms;
-  }
-  @keyframes scale-1 {
-    to {
-      transform: scale(1);
-    }
-  }
-
-  .effect-zoom-out {
-    animation-name: zoomOut;
-    animation-fill-mode: forwards;
-    animation-duration: 1000ms;
-  }
-  @keyframes zoomOut {
-    to {
-      transform: scale(0.5) translateY(-12cqw);
-    }
+  .sub-title {
+    transform: translate(0, -3cqw);
   }
 
   .effect-skew {
@@ -242,7 +215,7 @@
   }
   @keyframes shadow {
     to {
-      box-shadow: 0 4cqw 8cqw 8cqw var(--shadow-color);
+      box-shadow: 0 1cqw 8cqw 1cqw var(--shadow-color);
     }
   }
 
@@ -255,7 +228,7 @@
   }
 
   .effect-paint-4 {
-    background-position: 2cqw 0px;
+    background-position: 0cqw 0px;
     background-image: url(/google_photos_icon.png);
     background-color: white !important;
     background-repeat: no-repeat;
