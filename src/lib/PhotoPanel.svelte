@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { loadMoreMediaItems } from "./googleApi"
+  import { loadPhotos } from "./googleApi"
 
   export let album: gapi.client.photoslibrary.Album
   let nextPageToken = ""
@@ -8,7 +8,7 @@
   $: sortedImages = [...mediaItems].filter((a) => !!a.mediaMetadata.photo)
 
   async function loadMediaItems() {
-    const response = await loadMoreMediaItems(album.id, nextPageToken)
+    const response = await loadPhotos(album.id, nextPageToken)
     nextPageToken = response.result.nextPageToken || ""
     mediaItems = [...mediaItems, ...response.result.mediaItems!]
     return response.result

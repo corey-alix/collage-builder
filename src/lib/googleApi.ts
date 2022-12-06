@@ -79,7 +79,7 @@ export async function loadMediaItems(album: gapi.client.photoslibrary.Album) {
     return response.result
 }
 
-export async function loadMoreMediaItems(albumId: string, pageToken?: string) {
+export async function loadPhotos(albumId: string, pageToken?: string) {
     return await gapi.client.photoslibrary.mediaItems.search({
         resource: {
             albumId,
