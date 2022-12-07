@@ -12,7 +12,6 @@
   $: isAuthorized = false;
   let isGoogleApiInitialized = false;
   let albums: Array<gapi.client.photoslibrary.Album> = [];
-  let svgPoly = createSvgPolygon(6, {angle: 30, radius: 50});
 
   async function handleAuthClick() {
     await authenticateUser();
@@ -34,16 +33,12 @@
 </svelte:head>
 
 <section>
-  <svg width="0" height="0">
-    <defs>
-      <clipPath id="clip">
-        <path d="{svgPoly}" />
-      </clipPath>
-    </defs>
-  </svg>
-  <svg width="100" height="100">
-    <path id="path" d="{svgPoly}" fill="white" stroke="black" stroke-width="2" />
-    <path id="path2" d="{createSvgPolygon(6, {angle: 0, radius: 50})}" fill="rgb(20,20,20,0.5)" stroke="black" stroke-width="2" />
+  <svg viewBox="-50 -50 100 100">
+    <path id="path1" d="{createSvgPolygon(6, {angle: 0, radius: 30})}" fill="rgb(200,20,20,0.5)" stroke="black" stroke-width="2" />
+    <path id="path2" d="{createSvgPolygon(6, {angle: 30, radius: 24})}" fill="rgb(20,200,20,0.5)" stroke="black" stroke-width="2" />
+    <path id="path3" d="{createSvgPolygon(6, {angle: 0, radius: 19})}" fill="rgb(20,20,200,0.5)" stroke="black" stroke-width="2" />
+    <path id="path3" d="{createSvgPolygon(6, {angle: 30, radius: 15})}" fill="rgb(0,0,0,0.5)" stroke="black" stroke-width="2" />
+    <path id="path3" d="{createSvgPolygon(9, {angle: 10, radius: 6})}" fill="rgb(220,220,220,0.5)" stroke="black" stroke-width="2" />
   </svg>
 </section>
 <section

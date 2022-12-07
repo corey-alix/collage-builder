@@ -44,7 +44,6 @@ function createSvgPolygon(count: number, options: { angle?: number, radius?: num
     const angle = (options.angle || 0) * Math.PI / 180;
     let points = createPolygon(count, r1);
     points = rotatePolygon(points, angle);
-    points = translatePolygon(points, [r1, r1]);
     const path = asSvgPath(points);
     return path;
 }
