@@ -1,13 +1,12 @@
 <script lang="ts">
   import { loadPhotos } from "./googleApi"
+  import Photo from "./Photo.svelte"
 
   export let album: gapi.client.photoslibrary.Album
   let nextPageToken = ""
   let mediaItems: Array<gapi.client.photoslibrary.MediaItem> = []
 
-  $: sortedImages = [...mediaItems]
-    .filter((a) => !!a.mediaMetadata.photo)
-    .map((a) => ({ q: "=w256", ...a }))
+  $: sortedImages = [...mediaItems].filter((a) => !!a.mediaMetadata.photo)
 
   async function loadMediaItems() {
     const response = await loadPhotos(album.id, nextPageToken)
@@ -28,16 +27,7 @@
       class="grid-item"
       class:two-rows={image.mediaMetadata.height > image.mediaMetadata.width}
     >
-      <!-- svelte-ignore a11y-label-has-associated-control -->
-      <label class="image-caption">{image.filename}</label>
-      <!-- svelte-ignore a11y-click-events-have-key-events -->
-      <img
-        src={image.baseUrl + image.q}
-        alt={image.filename}
-        on:click={() => {
-          image.q = "=w512"
-        }}
-      />
+      <div><Photo {image} /></div>
     </div>
   {/each}
   {#if nextPageToken}
@@ -99,20 +89,11 @@
     outline: 3px solid var(--border-color);
   }
 
-  .grid-item > img {
+  .grid-item > div {
     border-radius: var(--border-radius);
     width: 100%;
     max-height: 90vh;
     object-fit: contain;
-  }
-
-  .image-caption {
-    text-align: center;
-    color: var(--text-color);
-    font-size: 6pt;
-    display: block;
-    background-color: var(--background-color);
-    overflow: hidden;
   }
 
   .more {
