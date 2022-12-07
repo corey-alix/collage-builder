@@ -1,29 +1,43 @@
 <script lang="ts">
-  import Logo from "./Logo.svelte";
-  import AlbumPanel from "./AlbumPanel.svelte";
+  import Logo from "./Logo.svelte"
+  import AlbumPanel from "./AlbumPanel.svelte"
+  import Template from "./polygonTemplate.svelte"
+
   import {
     authenticateUser,
     createTokenClient,
     listAllAlbums,
     signout,
-  } from "./googleApi";
+  } from "./googleApi"
+  import PolygonTemplate from "./polygonTemplate.svelte"
 
-  import { createSvgPolygon } from "./pageGenerator";
-  $: isAuthorized = false;
-  let isGoogleApiInitialized = false;
-  let albums: Array<gapi.client.photoslibrary.Album> = [];
+  $: isAuthorized = false
+  let isGoogleApiInitialized = false
+  let albums: Array<gapi.client.photoslibrary.Album> = []
+
+  let angle = 0
 
   async function handleAuthClick() {
-    await authenticateUser();
-    isGoogleApiInitialized = true;
-    await createTokenClient();
-    isAuthorized = true;
-    albums = await listAllAlbums();
+    await authenticateUser()
+    isGoogleApiInitialized = true
+    await createTokenClient()
+    isAuthorized = true
+    albums = await listAllAlbums()
   }
 
   function handleSignoutClick() {
-    signout();
-    isAuthorized = false;
+    signout()
+    isAuthorized = false
+  }
+
+  function decay(start: number, end = 0) {
+    const h = setInterval(() => {
+      start -= 0.1
+      if (start <= end) {
+        clearInterval(h)
+      }
+    }, 1000)
+    return start
   }
 </script>
 
@@ -32,45 +46,66 @@
   <meta name="description" content="Google Photos Integration" />
 </svelte:head>
 
-<section>
-  <svg viewBox="-50 -50 100 100">
-    <path id="path1" d="{createSvgPolygon(6, {angle: 0, radius: 30})}" fill="rgb(200,20,20,0.5)" stroke="black" stroke-width="2" />
-    <path id="path2" d="{createSvgPolygon(6, {angle: 30, radius: 24})}" fill="rgb(20,200,20,0.5)" stroke="black" stroke-width="2" />
-    <path id="path3" d="{createSvgPolygon(6, {angle: 0, radius: 19})}" fill="rgb(20,20,200,0.5)" stroke="black" stroke-width="2" />
-    <path id="path3" d="{createSvgPolygon(6, {angle: 30, radius: 15})}" fill="rgb(0,0,0,0.5)" stroke="black" stroke-width="2" />
-    <path id="path3" d="{createSvgPolygon(9, {angle: 10, radius: 6})}" fill="rgb(220,220,220,0.5)" stroke="black" stroke-width="2" />
-  </svg>
-</section>
 <section
   class="app"
   class:is-connected={isAuthorized}
   class:can-connect={isGoogleApiInitialized}
 >
   <div class="if-not-connected"><Logo /></div>
-  <section class="if-connected">
-    <div class="sub-title">
-      Collage Builder for <google>Google Photos</google>
+  <h2>Select a Template</h2>
+  <p>TODO: this will show some initial grid layout</p>
+  <h2>Alternative Borders</h2>
+  <p>Select the active image from one of these clippaths</p>
+  <div>
+    <div class="grid">
+      <div class="template"><PolygonTemplate count={3} /></div>
+      <div class="template"><PolygonTemplate count={3} angle={30} /></div>
+      <div class="template"><PolygonTemplate count={3} angle={60} /></div>
+      <div class="template"><PolygonTemplate count={3} angle={90} /></div>
+      <div class="template"><PolygonTemplate count={4} /></div>
+      <div class="template"><PolygonTemplate count={4} angle={45} /></div>
+      <div class="template"><PolygonTemplate count={5} angle={-18} /></div>
+      <div class="template"><PolygonTemplate count={5} angle={18} /></div>
+      <div class="template">
+        <PolygonTemplate
+          count={6}
+          {angle}
+          fillColor="#d11"
+          strokeColor="#ccc"
+        />
+      </div>
+      <div class="template"><PolygonTemplate count={6} angle={30} /></div>
+      <div class="template">
+        <PolygonTemplate count={7} angle={180 / 7 / 2} />
+      </div>
+      <div class="template"><PolygonTemplate count={8} angle={22.5} /></div>
     </div>
+    <input type="range" min="-90" max="90" bind:value={angle} />
+    <section class="if-connected">
+      <div class="sub-title">
+        Collage Builder for <google>Google Photos</google>
+      </div>
+      <section class="toolbar">
+        <input
+          type="button"
+          class="google_photos_button if-connected"
+          value="Sign out from Google Photos"
+          on:click={handleSignoutClick}
+        />
+      </section>
+    </section>
     <section class="toolbar">
       <input
         type="button"
-        class="google_photos_button if-connected"
-        value="Sign out from Google Photos"
-        on:click={handleSignoutClick}
+        class="google_photos_button if-not-connected"
+        value="Connect to Google Photos"
+        on:click={handleAuthClick}
       />
     </section>
-  </section>
-  <section class="toolbar">
-    <input
-      type="button"
-      class="google_photos_button if-not-connected"
-      value="Connect to Google Photos"
-      on:click={handleAuthClick}
-    />
-  </section>
-  <section class="workspace if-connected">
-    <AlbumPanel {albums} />
-  </section>
+    <section class="workspace if-connected">
+      <AlbumPanel {albums} />
+    </section>
+  </div>
 </section>
 
 <style>
@@ -141,5 +176,15 @@
   google {
     font-size: 2vw;
     font-display: swap;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5em;
+  }
+
+  .template {
+    width: 64px;
   }
 </style>

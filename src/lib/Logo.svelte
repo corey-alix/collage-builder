@@ -109,7 +109,6 @@
   .applogo {
     display: grid;
     align-items: center;
-    padding: 2rem;
     border-radius: 2em;
     width: min(80vw, 25em);
     container-type: inline-size;
@@ -204,7 +203,7 @@
   }
   @keyframes skew {
     to {
-      transform: skewX(-12deg);
+      transform: translateY(-2cqh) skewX(-12deg) scale(0.7);
     }
   }
 
