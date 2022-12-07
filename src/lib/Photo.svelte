@@ -6,14 +6,24 @@
 
   let query = 256
   let isBackup: "" | "ok" | "err" = ""
+  let isSaving = false
 
   $: if (saved) isBackup = "ok"
+
+  async function backup() {
+    isSaving = true
+    try {
+      saved = await backupImage(image)
+    } catch (ex) {
+      console.error(ex)
+      isBackup = "err"
+    }
+    isSaving = false
+  }
 </script>
 
 <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 <div class="grid" tabindex="0">
-  <!-- svelte-ignore a11y-label-has-associated-control -->
-  <label class="image-caption">{image.filename} {isBackup || "unknown"}</label>
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <img
     src={`${image.baseUrl}=w${query}`}
@@ -22,11 +32,21 @@
   />
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <green-circle
+    class="circle"
     class:hidden={isBackup == "err"}
     class:ok={isBackup == "ok"}
-    on:click={async () => (saved = await backupImage(image))}>✓</green-circle
+    class:is-saving={isSaving}
+    on:click={backup}>✓</green-circle
   >
-  <red-circle class:hidden={isBackup !== "err"}>✗</red-circle>
+  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <red-circle
+    class="circle"
+    class:hidden={isBackup !== "err"}
+    on:click={() => {
+      isBackup = ""
+      backup()
+    }}>✗</red-circle
+  >
   <div class="toolbar">
     <input
       type="button"
@@ -43,15 +63,6 @@
     height: 100%;
     object-fit: cover;
     border-radius: var(--border-radius);
-  }
-
-  .image-caption {
-    text-align: center;
-    color: var(--text-color);
-    font-size: 6pt;
-    display: block;
-    background-color: var(--background-color);
-    overflow: hidden;
   }
 
   .hidden {
@@ -89,26 +100,8 @@
     box-shadow: 0 0 1cqw 0.1cqw white;
   }
 
-  red-circle {
-    display: block;
-    width: 2em;
-    height: 2em;
-    border-radius: 50%;
-    background-color: red;
-    font-size: 0.5em;
-    text-align: center;
-    margin: 0;
-    padding: 0;
-    line-height: 2em;
-    position: absolute;
-    right: 1em;
-    top: 2em;
-    opacity: 0.5;
-  }
-
-  green-circle {
+  .circle {
     --size: 1.5em;
-    display: block;
     width: var(--size);
     height: var(--size);
     border-radius: 50%;
@@ -120,9 +113,22 @@
     position: absolute;
     right: 1em;
     top: 2em;
-    border: 1px solid rgba(0, 200, 0, 0.5);
-    color: rgba(255, 255, 255, 0.5);
     cursor: pointer;
+  }
+
+  red-circle {
+    background-color: red;
+  }
+
+  green-circle {
+    outline: 1px solid rgba(0, 200, 0, 0.5);
+    color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  green-circle:not(.ok):hover {
+    outline: 1px solid white;
+    color: white;
   }
 
   green-circle.ok {
@@ -130,5 +136,21 @@
     background-color: rgba(0, 255, 0, 0.5);
     color: white;
     cursor: default;
+  }
+
+  green-circle.is-saving {
+    animation-name: spin;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+  }
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
   }
 </style>

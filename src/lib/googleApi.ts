@@ -105,23 +105,39 @@ type PhotoInfo = {
 
 async function whatFilesHaveBeenBackedUp() {
     const response = await fetch("http://localhost:5107/Photo/list")
-    const json = (await response.json()) as Array<PhotoInfo>
-    return json
+    return (await response.json()) as Array<PhotoInfo>
 }
 
-export async function backupImage(image: gapi.client.photoslibrary.MediaItem, quality = 1024) {
-    try {
-        const response = await fetch(
-            `http://localhost:5107/Photo/save?url=${image.baseUrl}=w${quality}&filename=${image.filename}`
-        )
-        return true;
-    } catch (ex) {
-        console.error(ex);
-        return false;
-    }
+async function backupImage(image: gapi.client.photoslibrary.MediaItem, quality = 1024) {
+    const response = await fetch(
+        `http://localhost:5107/Photo/save?url=${image.baseUrl}=w${quality}&filename=${image.filename}`
+    )
+    return response.ok;
 }
 
 
-export const backups = await whatFilesHaveBeenBackedUp();
-console.log({ backups })
+let backups: Array<PhotoInfo> = [];
+export { backups, backupImage }
 
+retryUntilSuccessful(async () => backups = await whatFilesHaveBeenBackedUp());
+
+function retryUntilSuccessful<T>(cb: () => Promise<T>, interval = 1000 * 30, maxRetries = 10) {
+    const p = new Promise<T>((good, bad) => {
+        const h = setInterval(async () => {
+            try {
+                const result = await cb();
+                clearInterval(h);
+                good(result);
+            } catch (ex) {
+                console.log(ex);
+                maxRetries--;
+                if (maxRetries <= 0) {
+                    bad("Max retries exceeded");
+                    clearInterval(h);
+                    return;
+                }
+            }
+        }, interval);
+    });
+    return p;
+}
