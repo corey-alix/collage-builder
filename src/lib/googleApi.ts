@@ -97,3 +97,31 @@ export async function signout() {
     }
 
 }
+
+type PhotoInfo = {
+    id: string
+    href: string
+}
+
+async function whatFilesHaveBeenBackedUp() {
+    const response = await fetch("http://localhost:5107/Photo/list")
+    const json = (await response.json()) as Array<PhotoInfo>
+    return json
+}
+
+export async function backupImage(image: gapi.client.photoslibrary.MediaItem, quality = 1024) {
+    try {
+        const response = await fetch(
+            `http://localhost:5107/Photo/save?url=${image.baseUrl}=w${quality}&filename=${image.filename}`
+        )
+        return true;
+    } catch (ex) {
+        console.error(ex);
+        return false;
+    }
+}
+
+
+export const backups = await whatFilesHaveBeenBackedUp();
+console.log({ backups })
+

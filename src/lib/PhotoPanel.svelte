@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { loadPhotos } from "./googleApi"
+  import { backups, loadPhotos } from "./googleApi"
   import Photo from "./Photo.svelte"
 
   export let album: gapi.client.photoslibrary.Album
@@ -23,11 +23,12 @@
   {#each sortedImages as image}
     <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
     <div
-      tabindex="0"
       class="grid-item"
       class:two-rows={image.mediaMetadata.height > image.mediaMetadata.width}
     >
-      <div><Photo {image} /></div>
+      <div>
+        <Photo {image} saved={backups.some((b) => b.id == image.filename)} />
+      </div>
     </div>
   {/each}
   {#if nextPageToken}
@@ -85,15 +86,16 @@
     container-type: inline-size;
   }
 
-  .grid-item:focus {
-    outline: 3px solid var(--border-color);
-  }
-
   .grid-item > div {
     border-radius: var(--border-radius);
     width: 100%;
     max-height: 90vh;
     object-fit: contain;
+  }
+
+  .grid-item:hover,
+  .grid-item:focus-within {
+    outline: 3px solid var(--border-color);
   }
 
   .more {
