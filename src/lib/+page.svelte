@@ -1,30 +1,30 @@
 <script lang="ts">
-  import Logo from "./Logo.svelte"
-  import PhotoPanel from "./PhotoPanel.svelte"
-  import AlbumPanel from "./AlbumPanel.svelte"
+  import Logo from "./Logo.svelte";
+  import AlbumPanel from "./AlbumPanel.svelte";
   import {
     authenticateUser,
     createTokenClient,
     listAllAlbums,
-    loadMediaItems,
     signout,
-  } from "./googleApi"
+  } from "./googleApi";
 
-  $: isAuthorized = false
-  let isGoogleApiInitialized = false
-  let albums: Array<gapi.client.photoslibrary.Album> = []
+  import { createSvgPolygon } from "./pageGenerator";
+  $: isAuthorized = false;
+  let isGoogleApiInitialized = false;
+  let albums: Array<gapi.client.photoslibrary.Album> = [];
+  let svgPoly = createSvgPolygon(6, {angle: 30, radius: 50});
 
   async function handleAuthClick() {
-    await authenticateUser()
-    isGoogleApiInitialized = true
-    await createTokenClient()
-    isAuthorized = true
-    albums = await listAllAlbums()
+    await authenticateUser();
+    isGoogleApiInitialized = true;
+    await createTokenClient();
+    isAuthorized = true;
+    albums = await listAllAlbums();
   }
 
   function handleSignoutClick() {
-    signout()
-    isAuthorized = false
+    signout();
+    isAuthorized = false;
   }
 </script>
 
@@ -33,6 +33,19 @@
   <meta name="description" content="Google Photos Integration" />
 </svelte:head>
 
+<section>
+  <svg width="0" height="0">
+    <defs>
+      <clipPath id="clip">
+        <path d="{svgPoly}" />
+      </clipPath>
+    </defs>
+  </svg>
+  <svg width="100" height="100">
+    <path id="path" d="{svgPoly}" fill="white" stroke="black" stroke-width="2" />
+    <path id="path2" d="{createSvgPolygon(6, {angle: 0, radius: 50})}" fill="rgb(20,20,20,0.5)" stroke="black" stroke-width="2" />
+  </svg>
+</section>
 <section
   class="app"
   class:is-connected={isAuthorized}
