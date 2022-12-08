@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { backups, loadPhotos } from "./googleApi"
+  import { loadPhotos } from "./googleApi"
   import Photo from "./Photo.svelte"
+  import { backups } from "./photoApi"
 
   export let album: gapi.client.photoslibrary.Album
   let nextPageToken = ""

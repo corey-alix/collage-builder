@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { backupImage } from "./googleApi"
+  import { backupImage } from "./photoApi"
 
   export let image: gapi.client.photoslibrary.MediaItem
   export let saved = true
