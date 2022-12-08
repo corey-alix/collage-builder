@@ -1,12 +1,10 @@
 <script lang="ts">
   import Logo from "./Logo.svelte"
-  import PhotoPanel from "./PhotoPanel.svelte"
   import AlbumPanel from "./AlbumPanel.svelte"
   import {
     authenticateUser,
     createTokenClient,
     listAllAlbums,
-    loadMediaItems,
     signout,
   } from "./googleApi"
 

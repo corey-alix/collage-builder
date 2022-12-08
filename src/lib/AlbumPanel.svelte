@@ -1,16 +1,15 @@
 <script lang="ts">
-  import { createEventDispatcher } from "svelte"
-  import { loadAlbum } from "./googleApi"
   import PhotoPanel from "./PhotoPanel.svelte"
   export let albums: Array<gapi.client.photoslibrary.Album> = []
-  const dispatch = createEventDispatcher()
   let loaded = new Set<string>()
 </script>
 
 <div class="grid">
-  {#each albums as album, index}
+  {#each albums as album}
     <div class="span-all-columns" class:loaded={loaded.has(album.id)}>
-      <PhotoPanel {album} />
+      {#if loaded.has(album.id)}
+        <PhotoPanel {album} />
+      {/if}
     </div>
     <div tabIndex="0" class="albumPanel" class:loaded={loaded.has(album.id)}>
       <!-- svelte-ignore a11y-click-events-have-key-events -->

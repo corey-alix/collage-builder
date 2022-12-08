@@ -1,3 +1,4 @@
+const PHOTO_API = "http://localhost:5000/Photo"
 const API_KEY = "AIzaSyDTmNCr5okFZBbKsCtBSkPL_KJ1-gnvv1c"
 const CLIENT_ID =
     "164034047266-d9694hn1nmpm047bl7cbusqovq6s2ncp.apps.googleusercontent.com"
@@ -104,13 +105,13 @@ type PhotoInfo = {
 }
 
 async function whatFilesHaveBeenBackedUp() {
-    const response = await fetch("http://localhost:5107/Photo/list")
+    const response = await fetch(`${PHOTO_API}/list`)
     return (await response.json()) as Array<PhotoInfo>
 }
 
 async function backupImage(image: gapi.client.photoslibrary.MediaItem, quality = 1024) {
     const response = await fetch(
-        `http://localhost:5107/Photo/save?url=${image.baseUrl}=w${quality}&filename=${image.filename}`
+        `${PHOTO_API}/save?url=${image.baseUrl}=w${quality}&filename=${image.filename}`
     )
     return response.ok;
 }
