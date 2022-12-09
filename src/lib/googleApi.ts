@@ -109,7 +109,9 @@ export async function loadAllPhotosByDate(dates: Array<{ year: number, month: nu
         if (morePhotos.status !== 200) {
             throw new Error("Error loading photos")
         }
-        mediaItems.splice(mediaItems.length, 0, ...morePhotos.result.mediaItems);
+        if (morePhotos.result.mediaItems) {
+            mediaItems.splice(mediaItems.length, 0, ...morePhotos.result.mediaItems);
+        }
         nextPageToken = morePhotos.result.nextPageToken;
     }
     return mediaItems;
@@ -125,6 +127,16 @@ export async function loadPhotosByAlbum(albumId: string, pageToken?: string) {
     })
 }
 
+/**
+"{
+  "error": {
+    "code": 400,
+    "message": "Searching for items in chronological order only works with DateFilter.",
+    "status": "INVALID_ARGUMENT"
+  }
+}
+" * 
+ */
 export async function loadPhotosByDate(dates: Array<{ year: number, month: number, day: number }>, pageToken?: string) {
     return await gapi.client.photoslibrary.mediaItems.search({
         resource: {

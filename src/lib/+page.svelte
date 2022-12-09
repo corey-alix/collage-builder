@@ -38,8 +38,13 @@
     e: CustomEvent<{ year: number; month: number; day: number }>
   ) {
     const { year, month, day } = e.detail
+    if (!year || !month || !day) {
+      console.log("ignoring date", e.detail)
+      return
+    }
     const photos = await loadAllPhotosByDate([{ year, month, day }])
-    photosByDate[`${year}.${month}.${day}`] = photos
+    photosByDate[`${year}.${month}.${day}`] = photos || []
+    photosByDate = photosByDate
   }
 
   let backupInfo: Array<PhotoInfo> | null = null
@@ -88,8 +93,8 @@
   </section>
   <section class="workspace if-connected">
     {#each Object.entries(photosByDate) as [date, images]}
+      <p>{date}</p>
       <div class="simple-grid">
-        <p>date</p>
         {#each images as image}
           <div class="relative">
             <Photo {image} saved={isSaved(image)} />

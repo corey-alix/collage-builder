@@ -8,11 +8,13 @@
 
   // dispatch date change
   function handleDateChange(event: Event) {
-    const value = dateInput.valueAsDate
+    const value = dateInput.value
+    const [year, month, day] = value.split("-").map((x) => parseInt(x, 10))
+
     dispatch("change", {
-      year: value.getFullYear(),
-      month: value.getMonth(),
-      day: value.getDate(),
+      year,
+      month,
+      day,
     })
   }
 </script>
