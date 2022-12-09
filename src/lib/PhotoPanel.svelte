@@ -1,22 +1,34 @@
 <script lang="ts">
-  import { loadPhotos } from "./googleApi"
+  import { loadPhotosByAlbum } from "./googleApi"
   import Photo from "./Photo.svelte"
-  import { backups } from "./photoApi"
+  import { getBackupInfo } from "./photoApi"
+  import type { PhotoInfo } from "./photoApi"
 
   export let album: gapi.client.photoslibrary.Album
   let nextPageToken = ""
   let mediaItems: Array<gapi.client.photoslibrary.MediaItem> = []
 
-  $: sortedImages = [...mediaItems].filter((a) => !!a.mediaMetadata.photo)
-
   async function loadMediaItems() {
-    const response = await loadPhotos(album.id, nextPageToken)
+    const response = await loadPhotosByAlbum(album.id, nextPageToken)
     nextPageToken = response.result.nextPageToken || ""
     mediaItems = [...mediaItems, ...response.result.mediaItems!]
     return response.result
   }
 
-  album && loadMediaItems()
+  let backupInfo: Array<PhotoInfo> | null = null
+
+  function isSaved(image: gapi.client.photoslibrary.MediaItem): boolean {
+    if (!backupInfo) return false
+    return backupInfo.some((b) => b.id == image.filename)
+  }
+
+  $: sortedImages = [...mediaItems].filter((a) => !!a.mediaMetadata.photo)
+  $: {
+    album && loadMediaItems()
+    ;(async () => {
+      backupInfo = await getBackupInfo()
+    })()
+  }
 </script>
 
 <div class="grid">
@@ -28,7 +40,7 @@
       class:two-rows={image.mediaMetadata.height > image.mediaMetadata.width}
     >
       <div>
-        <Photo {image} saved={backups.some((b) => b.id == image.filename)} />
+        <Photo {image} saved={isSaved(image)} />
       </div>
     </div>
   {/each}

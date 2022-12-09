@@ -1,41 +1,81 @@
-import { PHOTO_API } from "./googleApi";
+// save to localStorage
+function save(id: string, data: any) {
+    localStorage.setItem(id, JSON.stringify(data));
+}
 
-type PhotoInfo = {
+// load from localStorage
+function load(id: string) {
+    const data = localStorage.getItem(id);
+    if (data) {
+        return JSON.parse(data);
+    }
+    return null;
+}
+
+// prompt user for a value that was not found in local storage
+function promptForValue(id: string, title: string) {
+    let value = load(id);
+    if (value === null) {
+        value = prompt(title);
+        save(id, value);
+    }
+    return value;
+}
+
+function promptForPhotoApi(title = "What is the Photo Server URL?") {
+    return promptForValue("PhotoServerUrl", title);
+}
+
+export type PhotoInfo = {
     id: string;
     href: string;
 };
 
 async function whatFilesHaveBeenBackedUp() {
+    const PHOTO_API = promptForPhotoApi("I cannot determine what has been backup up. What is the Photo Server URL?");
+    if (!PHOTO_API) throw "No photo api";
     const response = await fetch(`${PHOTO_API}/list`);
     return (await response.json()) as Array<PhotoInfo>;
 }
 
 async function backupImage(image: gapi.client.photoslibrary.MediaItem, quality = 1024) {
+    const PHOTO_API = promptForPhotoApi("I cannot backup photos withour a Photo Server URL. What is the Photo Server URL?");
+    if (!PHOTO_API) throw "No photo api";
     const response = await fetch(
         `${PHOTO_API}/save?url=${image.baseUrl}=w${quality}&filename=${image.filename}`
     );
     return response.ok;
 }
-let backups: Array<PhotoInfo> = [];
-export { backups, backupImage };
-retryUntilSuccessful(async () => backups = await whatFilesHaveBeenBackedUp());
+
 function retryUntilSuccessful<T>(cb: () => Promise<T>, interval = 1000 * 30, maxRetries = 10) {
     const p = new Promise<T>((good, bad) => {
-        const h = setInterval(async () => {
+        const doit = async () => {
             try {
                 const result = await cb();
-                clearInterval(h);
                 good(result);
             } catch (ex) {
                 console.log(ex);
                 maxRetries--;
                 if (maxRetries <= 0) {
                     bad("Max retries exceeded");
-                    clearInterval(h);
                     return;
                 }
+                await new Promise((resolve) => setTimeout(resolve, interval));
+                doit();
             }
-        }, interval);
+        };
+        doit();
     });
     return p;
 }
+
+let backups: Array<PhotoInfo> | null = null;
+async function getBackupInfo() {
+    if (backups) return backups;
+    console.log("Getting backup info");
+    backups = await retryUntilSuccessful(whatFilesHaveBeenBackedUp, 1000);
+    console.log("Got backup info")
+    return backups;
+}
+
+export { getBackupInfo, backupImage };

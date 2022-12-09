@@ -1,16 +1,25 @@
 <script lang="ts">
+  import { onMount } from "svelte"
   import Logo from "./Logo.svelte"
   import AlbumPanel from "./AlbumPanel.svelte"
+  import Photo from "./Photo.svelte"
   import {
     authenticateUser,
     createTokenClient,
     listAllAlbums,
+    loadAllPhotosByDate,
     signout,
   } from "./googleApi"
+  import DatePicker from "./DatePicker.svelte"
+  import { getBackupInfo, type PhotoInfo } from "./photoApi"
 
   $: isAuthorized = false
   let isGoogleApiInitialized = false
   let albums: Array<gapi.client.photoslibrary.Album> = []
+  let photosByDate: Record<
+    string,
+    Array<gapi.client.photoslibrary.MediaItem>
+  > = {}
 
   async function handleAuthClick() {
     await authenticateUser()
@@ -24,6 +33,25 @@
     signout()
     isAuthorized = false
   }
+
+  async function loadByDate(
+    e: CustomEvent<{ year: number; month: number; day: number }>
+  ) {
+    const { year, month, day } = e.detail
+    const photos = await loadAllPhotosByDate([{ year, month, day }])
+    photosByDate[`${year}.${month}.${day}`] = photos
+  }
+
+  let backupInfo: Array<PhotoInfo> | null = null
+
+  function isSaved(image: gapi.client.photoslibrary.MediaItem): boolean {
+    if (!backupInfo) return false
+    return backupInfo.some((b) => b.id == image.filename)
+  }
+
+  onMount(async () => {
+    backupInfo = await getBackupInfo()
+  })
 </script>
 
 <svelte:head>
@@ -59,6 +87,17 @@
     />
   </section>
   <section class="workspace if-connected">
+    {#each Object.entries(photosByDate) as [date, images]}
+      <div class="simple-grid">
+        <p>date</p>
+        {#each images as image}
+          <div class="relative">
+            <Photo {image} saved={isSaved(image)} />
+          </div>
+        {/each}
+      </div>
+    {/each}
+    <DatePicker on:change={loadByDate} />
     <AlbumPanel {albums} />
   </section>
 </section>
@@ -97,6 +136,16 @@
     justify-content: center;
     align-items: center;
     flex: 0.6;
+  }
+
+  .relative {
+    position: relative;
+  }
+
+  .simple-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1em;
   }
 
   .toolbar {

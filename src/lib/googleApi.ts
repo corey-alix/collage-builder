@@ -1,4 +1,4 @@
-export const PHOTO_API = "http://localhost:5000/Photo"
+const GOOGLE_PHOTO_PAGE_SIZE = 25;
 const API_KEY = "AIzaSyDTmNCr5okFZBbKsCtBSkPL_KJ1-gnvv1c"
 const CLIENT_ID =
     "164034047266-d9694hn1nmpm047bl7cbusqovq6s2ncp.apps.googleusercontent.com"
@@ -80,12 +80,67 @@ export async function loadMediaItems(album: gapi.client.photoslibrary.Album) {
     return response.result
 }
 
-export async function loadPhotos(albumId: string, pageToken?: string) {
+
+export async function loadAllPhotosByAlbum(albumId: string, pageToken?: string) {
+    const response = await loadPhotosByAlbum(albumId, pageToken);
+    if (response.status !== 200) {
+        throw new Error("Error loading photos")
+    }
+    let { mediaItems, nextPageToken } = response.result;
+    while (nextPageToken) {
+        const morePhotos = await loadPhotosByAlbum(albumId, nextPageToken);
+        if (morePhotos.status !== 200) {
+            throw new Error("Error loading photos")
+        }
+        mediaItems.splice(mediaItems.length, 0, ...morePhotos.result.mediaItems);
+        nextPageToken = morePhotos.result.nextPageToken;
+    }
+    return mediaItems;
+}
+
+export async function loadAllPhotosByDate(dates: Array<{ year: number, month: number, day: number }>, pageToken?: string) {
+    const response = await loadPhotosByDate(dates, pageToken);
+    if (response.status !== 200) {
+        throw new Error("Error loading photos")
+    }
+    let { mediaItems, nextPageToken } = response.result;
+    while (nextPageToken) {
+        const morePhotos = await loadPhotosByDate(dates, nextPageToken);
+        if (morePhotos.status !== 200) {
+            throw new Error("Error loading photos")
+        }
+        mediaItems.splice(mediaItems.length, 0, ...morePhotos.result.mediaItems);
+        nextPageToken = morePhotos.result.nextPageToken;
+    }
+    return mediaItems;
+}
+
+export async function loadPhotosByAlbum(albumId: string, pageToken?: string) {
     return await gapi.client.photoslibrary.mediaItems.search({
         resource: {
             albumId,
-            pageSize: 10,
+            pageSize: GOOGLE_PHOTO_PAGE_SIZE,
             pageToken,
+        },
+    })
+}
+
+export async function loadPhotosByDate(dates: Array<{ year: number, month: number, day: number }>, pageToken?: string) {
+    return await gapi.client.photoslibrary.mediaItems.search({
+        resource: {
+            //albumId,
+            pageSize: GOOGLE_PHOTO_PAGE_SIZE,
+            pageToken,
+            filters: {
+                mediaTypeFilter: {
+                    mediaTypes: ["PHOTO"],
+                },
+                dateFilter: {
+                    dates
+                }
+            },
+            //@ts-ignore: orderBy is not in the type definition
+            orderBy: "MediaMetadata.creation_time desc",
         },
     })
 }
