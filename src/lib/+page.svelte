@@ -34,6 +34,9 @@
     isAuthorized = false
   }
 
+  let selectedDate: string = "2022-06-24"
+  $: console.log(selectedDate)
+
   async function loadByDate(
     e: CustomEvent<{ year: number; month: number; day: number }>
   ) {
@@ -43,7 +46,7 @@
       return
     }
     const photos = await loadAllPhotosByDate([{ year, month, day }])
-    photosByDate[`${year}.${month}.${day}`] = photos || []
+    photosByDate[`${year}.${month}.${day}`] = (photos || []).reverse()
     photosByDate = photosByDate
   }
 
@@ -102,7 +105,7 @@
         {/each}
       </div>
     {/each}
-    <DatePicker on:change={loadByDate} />
+    <DatePicker on:change={loadByDate} bind:dateValue={selectedDate} />
     <AlbumPanel {albums} />
   </section>
 </section>
@@ -175,7 +178,7 @@
 
   .app:not(.is-connected) .if-connected,
   .app.is-connected .if-not-connected {
-    display: none;
+    opacity: 0.5;
   }
 
   .sub-title {

@@ -152,7 +152,8 @@ export async function loadPhotosByDate(dates: Array<{ year: number, month: numbe
                 }
             },
             //@ts-ignore: orderBy is not in the type definition
-            orderBy: "MediaMetadata.creation_time desc",
+            // I cannot get the other direction (asc) to work, excluting also returns in desc.
+            //orderBy: "MediaMetadata.creation_time desc",
         },
     })
 }
