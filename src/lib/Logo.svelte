@@ -1,12 +1,8 @@
 <script lang="ts">
+  import { sleep } from "./googleApi"
+
   let play = 0
   ;(async function () {
-    function sleep(duration: number) {
-      return new Promise<void>((good, bad) => {
-        setTimeout(() => good(), duration)
-      })
-    }
-
     function doit() {
       play++
       return play <= 10

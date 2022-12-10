@@ -41,9 +41,18 @@ async function whatFilesHaveBeenBackedUp() {
 async function backupImage(image: gapi.client.photoslibrary.MediaItem, quality = 1024) {
     const PHOTO_API = promptForPhotoApi("I cannot backup photos withour a Photo Server URL. What is the Photo Server URL?");
     if (!PHOTO_API) throw "No photo api";
-    const response = await fetch(
-        `${PHOTO_API}/save?url=${image.baseUrl}=w${quality}&filename=${image.filename}`
-    );
+    const data = {
+        id: image.id,
+        url: image.baseUrl,
+        filename: image.filename,
+        created: image.mediaMetadata.creationTime,
+        width: image.mediaMetadata.width,
+        height: image.mediaMetadata.height,
+        description: image.description,
+    }
+    const url = `${PHOTO_API}/save`;
+    const queryString = Object.keys(data).filter(k => typeof data[k] != "undefined").map(key => key + '=' + data[key]).join('&');
+    const response = await fetch(`${url}?${queryString}`);
     return response.ok;
 }
 

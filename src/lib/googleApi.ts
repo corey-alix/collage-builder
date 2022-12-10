@@ -7,6 +7,12 @@ const DISCOVERY_DOC =
     "https://www.googleapis.com/discovery/v1/apis/photoslibrary/v1/rest"
 
 
+export function sleep(duration: number) {
+    return new Promise<void>((good, bad) => {
+        setTimeout(() => good(), duration)
+    })
+}
+
 export function authenticateUser() {
     const p = new Promise<void>((good, bad) => {
         gapi.load("client", async () => {
@@ -138,6 +144,12 @@ export async function loadPhotosByAlbum(albumId: string, pageToken?: string) {
 " * 
  */
 export async function loadPhotosByDate(dates: Array<{ year: number, month: number, day: number }>, pageToken?: string) {
+    if (!gapi.client) {
+        await authenticateUser()
+        await createTokenClient()
+        await sleep(300);
+        return loadPhotosByDate(dates, pageToken);
+    }
     return await gapi.client.photoslibrary.mediaItems.search({
         resource: {
             //albumId,
