@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { backupImage } from "./photoApi"
+  import { sleep } from "./googleApi"
+  import { backupImage, removeImage } from "./photoApi"
 
   export let image: gapi.client.photoslibrary.MediaItem
   export let saved = true
@@ -9,6 +10,18 @@
   let isSaving = false
 
   $: if (saved) isBackup = "ok"
+
+  async function deleteImage() {
+    isSaving = true
+    try {
+      await removeImage(image)
+      saved = false
+    } catch (ex) {
+      console.error(ex)
+      isBackup = "err"
+    }
+    isSaving = false
+  }
 
   async function backup() {
     isSaving = true
@@ -36,7 +49,14 @@
     class:hidden={isBackup == "err"}
     class:ok={isBackup == "ok"}
     class:is-saving={isSaving}
-    on:click={backup}>✓</green-circle
+    on:click={() => {
+      if (saved) {
+        isBackup = ""
+        deleteImage()
+      } else {
+        backup()
+      }
+    }}>✓</green-circle
   >
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <red-circle
@@ -76,7 +96,7 @@
 
   /* show toolbar when grid or a grid child has focus */
   .grid:not(:focus-within) > .toolbar {
-    display: none;
+    display: grid;
   }
 
   .toolbar {
@@ -89,7 +109,6 @@
   .toolbar > input {
     font-size: 6pt;
     text-align: center;
-    width: 33cqw;
     background-color: var(--background-color);
     color: var(--text-color);
     border: 1px solid var(--border-color);

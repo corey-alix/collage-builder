@@ -34,8 +34,7 @@
     isAuthorized = false
   }
 
-  let selectedDate: string = "2022-06-24"
-  $: console.log(selectedDate)
+  let selectedDate: string = ""
 
   async function loadByDate(
     e: CustomEvent<{ year: number; month: number; day: number }>
@@ -54,10 +53,15 @@
 
   function isSaved(image: gapi.client.photoslibrary.MediaItem): boolean {
     if (!backupInfo) return false
-    return backupInfo.some((b) => b.id == image.filename)
+    return backupInfo.some((b) => b.filename == image.filename)
+  }
+
+  $: {
+    selectedDate && localStorage.setItem("selected_date", selectedDate)
   }
 
   onMount(async () => {
+    selectedDate = localStorage.getItem("selected_date") || ""
     backupInfo = await getBackupInfo()
   })
 </script>
@@ -178,7 +182,7 @@
 
   .app:not(.is-connected) .if-connected,
   .app.is-connected .if-not-connected {
-    opacity: 0.5;
+    opacity: 1;
   }
 
   .sub-title {

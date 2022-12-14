@@ -3,6 +3,7 @@
   import Photo from "./Photo.svelte"
   import { getBackupInfo } from "./photoApi"
   import type { PhotoInfo } from "./photoApi"
+  import { onMount } from "svelte"
 
   export let album: gapi.client.photoslibrary.Album
   let nextPageToken = ""
@@ -15,20 +16,22 @@
     return response.result
   }
 
-  let backupInfo: Array<PhotoInfo> | null = null
-
-  function isSaved(image: gapi.client.photoslibrary.MediaItem): boolean {
-    if (!backupInfo) return false
-    return backupInfo.some((b) => b.id == image.filename)
-  }
+  let backupInfo: Record<string, PhotoInfo> = {}
 
   $: sortedImages = [...mediaItems].filter((a) => !!a.mediaMetadata.photo)
   $: {
     album && loadMediaItems()
-    ;(async () => {
-      backupInfo = await getBackupInfo()
-    })()
   }
+
+  onMount(async () => {
+    const photoList = await getBackupInfo()
+    backupInfo = photoList.reduce((acc, photo) => {
+      acc[photo.id] = photo
+      return acc
+    }, {} as Record<string, PhotoInfo>)
+
+    console.log(backupInfo)
+  })
 </script>
 
 <div class="grid">
@@ -40,7 +43,7 @@
       class:two-rows={image.mediaMetadata.height > image.mediaMetadata.width}
     >
       <div>
-        <Photo {image} saved={isSaved(image)} />
+        <Photo {image} saved={!!backupInfo[image.id]} />
       </div>
     </div>
   {/each}

@@ -4,9 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "go": "npm run start-image-server & npm run dev & npm run start-svelte-lab",
+    "dev": "vite --port 5174 --strictPort",
     "build": "vite build",
     "preview": "vite preview",
+    "start-image-server": "cd ~/code/ca0v/CollageServices/CollageServices && dotnet run",
+    "start-svelte-lab": "cd ~/code/ca0v/svelte-lab && npm run dev",
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "devDependencies": {

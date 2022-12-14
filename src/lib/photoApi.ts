@@ -4,7 +4,7 @@ function save(id: string, data: any) {
 }
 
 // load from localStorage
-function load(id: string) {
+function load(id: string): string | null {
     const data = localStorage.getItem(id);
     if (data) {
         return JSON.parse(data);
@@ -13,7 +13,7 @@ function load(id: string) {
 }
 
 // prompt user for a value that was not found in local storage
-function promptForValue(id: string, title: string) {
+function promptForValue(id: string, title: string): string {
     let value = load(id);
     if (value === null) {
         value = prompt(title);
@@ -28,18 +28,21 @@ function promptForPhotoApi(title = "What is the Photo Server URL?") {
 
 export type PhotoInfo = {
     id: string;
-    href: string;
+    filename: string;
+    created: string;
+    width: number;
+    height: number;
 };
 
 async function whatFilesHaveBeenBackedUp() {
     const PHOTO_API = promptForPhotoApi("I cannot determine what has been backup up. What is the Photo Server URL?");
     if (!PHOTO_API) throw "No photo api";
-    const response = await fetch(`${PHOTO_API}/list`);
+    const response = await fetch(`${PHOTO_API}/photo/list`);
     return (await response.json()) as Array<PhotoInfo>;
 }
 
 async function backupImage(image: gapi.client.photoslibrary.MediaItem, quality = 1024) {
-    const PHOTO_API = promptForPhotoApi("I cannot backup photos withour a Photo Server URL. What is the Photo Server URL?");
+    const PHOTO_API = promptForPhotoApi("I cannot backup photos without a Photo Server URL. What is the Photo Server URL?");
     if (!PHOTO_API) throw "No photo api";
     const data = {
         id: image.id,
@@ -50,9 +53,25 @@ async function backupImage(image: gapi.client.photoslibrary.MediaItem, quality =
         height: image.mediaMetadata.height,
         description: image.description,
     }
-    const url = `${PHOTO_API}/save`;
+    const url = `${PHOTO_API}/photo/save`;
     const queryString = Object.keys(data).filter(k => typeof data[k] != "undefined").map(key => key + '=' + data[key]).join('&');
     const response = await fetch(`${url}?${queryString}`);
+    if (!response.ok) {
+        console.log("Error backing up image", response);
+        throw "Error backing up image";
+    }
+    return response.ok;
+}
+
+async function removeImage(image: gapi.client.photoslibrary.MediaItem) {
+    const PHOTO_API = promptForPhotoApi("I cannot backup photos without a Photo Server URL. What is the Photo Server URL?");
+    if (!PHOTO_API) throw "No photo api";
+    const url = `${PHOTO_API}/photo/delete`;
+    const response = await fetch(`${url}?id=${image.id}`);
+    if (!response.ok) {
+        console.log("Error removing image", response);
+        throw "Error removing image";
+    }
     return response.ok;
 }
 
@@ -87,4 +106,4 @@ async function getBackupInfo() {
     return backups;
 }
 
-export { getBackupInfo, backupImage };
+export { getBackupInfo, backupImage, removeImage };
