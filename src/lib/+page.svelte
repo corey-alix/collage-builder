@@ -25,6 +25,7 @@
     await signin()
     isSignedIn = true
     albums = await listAllAlbums()
+    uploadMissingPhotos()
   }
 
   function handleSignoutClick() {
@@ -54,6 +55,18 @@
     return backupInfo.some((b) => b.filename == image.filename)
   }
 
+  async function uploadMissingPhotos() {
+    const missingPhotos = backupInfo.filter((p) => !p.cached)
+    if (missingPhotos.length == 0) return
+    console.log("reloading missing photos in background", missingPhotos)
+
+    await signin();
+    missingPhotos.forEach(async (p) => {
+      const image = await loadMediaItem(p.id)
+      backupImage(image)
+    })
+  }
+
   $: {
     selectedDate && localStorage.setItem("selected_date", selectedDate)
   }
@@ -61,13 +74,6 @@
   onMount(async () => {
     selectedDate = localStorage.getItem("selected_date") || ""
     backupInfo = await getBackupInfo()
-
-    const missingPhotos = backupInfo.filter((p) => !p.cached)
-    console.log("reloading missing photos in background", missingPhotos)
-    missingPhotos.forEach(async (p) => {
-      const image = await loadMediaItem(p.id)
-      backupImage(image)
-    })
   })
 </script>
 
