@@ -32,6 +32,7 @@ export type PhotoInfo = {
     created: string;
     width: number;
     height: number;
+    cached: boolean;
 };
 
 async function whatFilesHaveBeenBackedUp() {

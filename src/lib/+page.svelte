@@ -8,10 +8,11 @@
     createTokenClient,
     listAllAlbums,
     loadAllPhotosByDate,
+    loadMediaItem,
     signout,
   } from "./googleApi"
   import DatePicker from "./DatePicker.svelte"
-  import { getBackupInfo, type PhotoInfo } from "./photoApi"
+  import { backupImage, getBackupInfo, type PhotoInfo } from "./photoApi"
 
   $: isAuthorized = false
   let isGoogleApiInitialized = false
@@ -63,6 +64,13 @@
   onMount(async () => {
     selectedDate = localStorage.getItem("selected_date") || ""
     backupInfo = await getBackupInfo()
+
+    const missingPhotos = backupInfo.filter((p) => !p.cached)
+    console.log("reloading missing photos in background", missingPhotos)
+    missingPhotos.forEach(async (p) => {
+      const image = await loadMediaItem(p.id)
+      backupImage(image)
+    })
   })
 </script>
 
