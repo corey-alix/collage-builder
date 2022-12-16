@@ -3,19 +3,18 @@
   import Logo from "./Logo.svelte"
   import AlbumPanel from "./AlbumPanel.svelte"
   import Photo from "./Photo.svelte"
+
+  import { signin, signout } from "./googleApi"
+
   import {
-    authenticateUser,
-    createTokenClient,
     listAllAlbums,
     loadAllPhotosByDate,
     loadMediaItem,
-    signout,
-  } from "./googleApi"
+  } from "./googlePhotoApi"
   import DatePicker from "./DatePicker.svelte"
   import { backupImage, getBackupInfo, type PhotoInfo } from "./photoApi"
 
-  $: isAuthorized = false
-  let isGoogleApiInitialized = false
+  let isSignedIn = false
   let albums: Array<gapi.client.photoslibrary.Album> = []
   let photosByDate: Record<
     string,
@@ -23,16 +22,14 @@
   > = {}
 
   async function handleAuthClick() {
-    await authenticateUser()
-    isGoogleApiInitialized = true
-    await createTokenClient()
-    isAuthorized = true
+    await signin()
+    isSignedIn = true
     albums = await listAllAlbums()
   }
 
   function handleSignoutClick() {
     signout()
-    isAuthorized = false
+    isSignedIn = false
   }
 
   let selectedDate: string = ""
@@ -79,47 +76,45 @@
   <meta name="description" content="Google Photos Integration" />
 </svelte:head>
 
-<section
-  class="app"
-  class:is-connected={isAuthorized}
-  class:can-connect={isGoogleApiInitialized}
->
-  <div class="if-not-connected"><Logo /></div>
-  <section class="if-connected">
+<section class="app">
+  <div><Logo /></div>
+  <section>
     <div class="sub-title">
       Collage Builder for <google>Google Photos</google>
     </div>
     <section class="toolbar">
       <input
         type="button"
-        class="google_photos_button if-connected"
+        disabled={!isSignedIn}
+        class="google_photos_button"
         value="Sign out from Google Photos"
         on:click={handleSignoutClick}
       />
+      <input
+        type="button"
+        disabled={isSignedIn}
+        class="google_photos_button"
+        value="Connect to Google Photos"
+        on:click={handleAuthClick}
+      />
     </section>
   </section>
-  <section class="toolbar">
-    <input
-      type="button"
-      class="google_photos_button if-not-connected"
-      value="Connect to Google Photos"
-      on:click={handleAuthClick}
-    />
-  </section>
-  <section class="workspace if-connected">
-    {#each Object.entries(photosByDate) as [date, images]}
-      <p>{date}</p>
-      <div class="simple-grid">
-        {#each images as image}
-          <div class="relative">
-            <Photo {image} saved={isSaved(image)} />
-          </div>
-        {/each}
-      </div>
-    {/each}
-    <DatePicker on:change={loadByDate} bind:dateValue={selectedDate} />
-    <AlbumPanel {albums} />
-  </section>
+  {#if isSignedIn}
+    <section class="workspace">
+      {#each Object.entries(photosByDate) as [date, images]}
+        <p>{date}</p>
+        <div class="simple-grid">
+          {#each images as image}
+            <div class="relative">
+              <Photo {image} saved={isSaved(image)} />
+            </div>
+          {/each}
+        </div>
+      {/each}
+      <DatePicker on:change={loadByDate} bind:dateValue={selectedDate} />
+      <AlbumPanel {albums} />
+    </section>
+  {/if}
 </section>
 
 <style>
@@ -188,11 +183,6 @@
     border-radius: 4px;
   }
 
-  .app:not(.is-connected) .if-connected,
-  .app.is-connected .if-not-connected {
-    opacity: 1;
-  }
-
   .sub-title {
     font-size: 3vw;
   }
@@ -200,5 +190,9 @@
   google {
     font-size: 2vw;
     font-display: swap;
+  }
+
+  input:disabled {
+    display: none;
   }
 </style>

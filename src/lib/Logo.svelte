@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { sleep } from "./googleApi"
-
   let play = 0
   ;(async function () {
     function doit() {
@@ -10,6 +8,10 @@
 
     while (doit()) await sleep(100)
   })()
+
+  async function sleep(delay: number) {
+    return new Promise((resolve) => setTimeout(resolve, delay))
+  }
 </script>
 
 <div class="applogo">

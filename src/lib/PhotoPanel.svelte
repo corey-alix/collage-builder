@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { loadPhotosByAlbum } from "./googleApi"
+  import { loadPhotosByAlbum } from "./googlePhotoApi"
   import Photo from "./Photo.svelte"
   import { getBackupInfo } from "./photoApi"
   import type { PhotoInfo } from "./photoApi"

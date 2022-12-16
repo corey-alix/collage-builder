@@ -42,7 +42,7 @@ async function whatFilesHaveBeenBackedUp() {
     return (await response.json()) as Array<PhotoInfo>;
 }
 
-async function backupImage(image: gapi.client.photoslibrary.MediaItem, quality = 1024) {
+async function backupImage(image: gapi.client.photoslibrary.MediaItem) {
     const PHOTO_API = promptForPhotoApi("I cannot backup photos without a Photo Server URL. What is the Photo Server URL?");
     if (!PHOTO_API) throw "No photo api";
     const data = {

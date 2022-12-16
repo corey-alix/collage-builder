@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { sleep } from "./googleApi"
   import { backupImage, removeImage } from "./photoApi"
 
   export let image: gapi.client.photoslibrary.MediaItem

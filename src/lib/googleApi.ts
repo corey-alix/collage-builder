@@ -1,198 +1,172 @@
-const GOOGLE_PHOTO_PAGE_SIZE = 25;
-const API_KEY = "AIzaSyDTmNCr5okFZBbKsCtBSkPL_KJ1-gnvv1c"
-const CLIENT_ID =
-    "164034047266-d9694hn1nmpm047bl7cbusqovq6s2ncp.apps.googleusercontent.com"
 const SCOPES = "https://www.googleapis.com/auth/photoslibrary.readonly"
-const DISCOVERY_DOC =
-    "https://www.googleapis.com/discovery/v1/apis/photoslibrary/v1/rest"
+const DISCOVERY_DOC = "https://www.googleapis.com/discovery/v1/apis/photoslibrary/v1/rest";
 
-
-export async function loadGoogleApi() {
-    if (gapi.client) return gapi.client;
-    await authenticateUser()
-    await createTokenClient()
-    await sleep(300);
-    return loadGoogleApi();
-}
-
-export function sleep(duration: number) {
-    return new Promise<void>((good, bad) => {
-        setTimeout(() => good(), duration)
-    })
-}
-
-export function authenticateUser() {
-    const p = new Promise<void>((good, bad) => {
-        gapi.load("client", async () => {
-            try {
-                gapi.client
-                    .init({
-                        apiKey: API_KEY,
-                        discoveryDocs: [DISCOVERY_DOC],
-                    })
-                    .then((authResult) => {
-                        good()
-                    })
-            } catch (ex) {
-                bad(ex)
-            }
-        })
-    })
-    return p;
-}
-
-export function createTokenClient() {
-    const p = new Promise<any>((good, bad) => {
-        const tokenClient = google.accounts.oauth2.initTokenClient({
-            client_id: CLIENT_ID,
-            scope: SCOPES,
-            callback: async (response: any) => {
-                if (response.error) {
-                    bad(response)
-                } else {
-                    good(tokenClient);
-                }
-            },
-        })
-        tokenClient.requestAccessToken({ prompt: "" })
-    });
-
-    return p;
-}
-
-export async function listAllAlbums() {
-    let { albums, nextPageToken } = await listAlbums();
-    while (nextPageToken) {
-        const moreAlbums = await listAlbums(nextPageToken);
-        albums.splice(albums.length, 0, ...moreAlbums.albums);
-        nextPageToken = moreAlbums.nextPageToken;
-    }
-    return albums;
-}
-
-export async function listAlbums(pageToken?: string) {
-    const response = await gapi.client.photoslibrary.albums.list({
-        pageToken
-    })
-    return response.result
-}
-
-export async function loadAlbum(albumId: string) {
-    const response = await gapi.client.photoslibrary.albums.get({
-        albumId,
-    })
-    return response.result
-}
-
-export async function loadMediaItem(mediaItemId: string) {
-    await loadGoogleApi();
-    const response = await gapi.client.photoslibrary.mediaItems.get({
-        mediaItemId,
-    })
-    return response.result
-}
-
-export async function loadMediaItems(album: gapi.client.photoslibrary.Album) {
-    const response = await gapi.client.photoslibrary.mediaItems.search({
-        resource: {
-            pageSize: 10,
-            albumId: album.id,
-        },
-    })
-    return response.result
-}
-
-
-export async function loadAllPhotosByAlbum(albumId: string, pageToken?: string) {
-    const response = await loadPhotosByAlbum(albumId, pageToken);
-    if (response.status !== 200) {
-        throw new Error("Error loading photos")
-    }
-    let { mediaItems, nextPageToken } = response.result;
-    while (nextPageToken) {
-        const morePhotos = await loadPhotosByAlbum(albumId, nextPageToken);
-        if (morePhotos.status !== 200) {
-            throw new Error("Error loading photos")
-        }
-        mediaItems.splice(mediaItems.length, 0, ...morePhotos.result.mediaItems);
-        nextPageToken = morePhotos.result.nextPageToken;
-    }
-    return mediaItems;
-}
-
-export async function loadAllPhotosByDate(dates: Array<{ year: number, month: number, day: number }>, pageToken?: string) {
-    const response = await loadPhotosByDate(dates, pageToken);
-    if (response.status !== 200) {
-        throw new Error("Error loading photos")
-    }
-    let { mediaItems, nextPageToken } = response.result;
-    while (nextPageToken) {
-        const morePhotos = await loadPhotosByDate(dates, nextPageToken);
-        if (morePhotos.status !== 200) {
-            throw new Error("Error loading photos")
-        }
-        if (morePhotos.result.mediaItems) {
-            mediaItems.splice(mediaItems.length, 0, ...morePhotos.result.mediaItems);
-        }
-        nextPageToken = morePhotos.result.nextPageToken;
-    }
-    return mediaItems;
-}
-
-export async function loadPhotosByAlbum(albumId: string, pageToken?: string) {
-    return await gapi.client.photoslibrary.mediaItems.search({
-        resource: {
-            albumId,
-            pageSize: GOOGLE_PHOTO_PAGE_SIZE,
-            pageToken,
-        },
-    })
+const callbackMap = {
+    "google+gapi": [],
 }
 
 /**
-"{
-  "error": {
-    "code": 400,
-    "message": "Searching for items in chronological order only works with DateFilter.",
-    "status": "INVALID_ARGUMENT"
-  }
-}
-" * 
+ * @param {string} key
  */
-export async function loadPhotosByDate(dates: Array<{ year: number, month: number, day: number }>, pageToken?: string) {
-    if (!gapi.client) {
-        await authenticateUser()
-        await createTokenClient()
-        await sleep(300);
-        return loadPhotosByDate(dates, pageToken);
-    }
-    return await gapi.client.photoslibrary.mediaItems.search({
-        resource: {
-            //albumId,
-            pageSize: GOOGLE_PHOTO_PAGE_SIZE,
-            pageToken,
-            filters: {
-                mediaTypeFilter: {
-                    mediaTypes: ["PHOTO"],
-                },
-                dateFilter: {
-                    dates
-                }
-            },
-            //@ts-ignore: orderBy is not in the type definition
-            // I cannot get the other direction (asc) to work, excluting also returns in desc.
-            //orderBy: "MediaMetadata.creation_time desc",
-        },
+function getFromLocalStorage(key: string) {
+    const result = localStorage.getItem(key);
+    if (result == null) return null;
+    return JSON.parse(result);
+}
+
+/**
+ * @param {string} key
+ * @param {any} value
+ */
+function setInLocalStorage(key: string, value: any) {
+    localStorage.setItem(key, JSON.stringify(value));
+}
+
+/**
+ * @param {string} message
+ */
+async function promptForValue(message: string) {
+    let result = getFromLocalStorage(message);
+    if (result) return result;
+    return new Promise((resolve, reject) => {
+        result = prompt(message);
+        if (result) {
+            setInLocalStorage(message, result);
+            resolve(result);
+        }
+        reject(new Error('No value provided'));
     })
 }
 
+async function useGoogle() {
+    console.log("useGoogle")
+    if (!gapi) throw "gapi not loaded"
+    if (!gapi.client) throw "gapi.client not loaded"
+    const clientId = await promptForValue('YOUR_CLIENT_ID');
+    return new Promise((resolve, reject) => {
+        const tokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: clientId,
+            scope: SCOPES,
+            callback: (response: any) => {
+                if (response.error) {
+                    reject(response.error);
+                    return;
+                }
+                console.log("tokenClient", response)
+                // expires_in is in seconds
+                const expires_at = (Date.now() + 1000 * parseInt(response.expires_in));
+                setInLocalStorage('google', { ...response, expires_at });
+                resolve(response);
+            },
+            error_callback: (error: any) => {
+                console.error(error);
+                setInLocalStorage('YOUR_CLIENT_ID', null);
+                reject(error);
+            }
+        })
+
+        // token is always null on refresh but why prompt for identity?        
+        const token = gapi.client.getToken();
+        if (token === null) {
+            if (getFromLocalStorage('google') === null) {
+                tokenClient.requestAccessToken({ prompt: "consent" });
+            } else {
+                const accessTokenInfo = getFromLocalStorage('google');
+                if (accessTokenInfo.expires_at > Date.now()) {
+                    console.log("reusing token", accessTokenInfo)
+                    gapi.client.setToken({ access_token: accessTokenInfo.access_token });
+                    resolve(accessTokenInfo);
+                } else {
+                    tokenClient.requestAccessToken({ prompt: "" });
+                }
+            }
+        } else {
+            tokenClient.requestAccessToken({ prompt: "" });
+        }
+
+    });
+
+}
+
+async function useGapi() {
+    console.log("useGapi")
+    if (!gapi) throw "gapi not loaded"
+    return new Promise<void>((resolve, reject) => {
+        gapi.load("client", async () => {
+            try {
+                const apiKey = await promptForValue('YOUR_API_KEY');
+                await gapi.client.init({
+                    apiKey: apiKey,
+                    discoveryDocs: [DISCOVERY_DOC],
+                })
+                resolve();
+            } catch (error) {
+                console.error(error);
+                setInLocalStorage('YOUR_API_KEY', null);
+                reject();
+            }
+        });
+    });
+}
+
+/**
+ * @param {string} api
+ */
+function loaded(api: string) {
+
+    const keys = Object.keys(callbackMap).filter(k => k.split("+").includes(api));
+    if (!keys.length) return;
+    keys.forEach(async key => {
+        const requiredApis = key.split("+");
+        const availableApis = requiredApis.filter(k => !!window[k]);
+        if (availableApis.length !== requiredApis.length) return;
+        const callbacks = callbackMap[key];
+        if (!callbacks) return;
+        await Promise.all(callbacks.map((/** @type {() => any} */ c: () => any) => c()))
+    })
+
+}
+
+{
+    // <script async defer src="https://apis.google.com/js/api.js" onload="loaded('gapi')"></script>
+    // <script async defer src="https://accounts.google.com/gsi/client" onload="loaded('google')"></script>
+    /**
+     * @param {string} src
+     * @param {string} id
+     */
+    function injectScript(src: string, id: string) {
+        const script = document.createElement('script');
+        script.src = src;
+        script.async = true;
+        script.defer = true;
+        script.onload = () => loaded(id);
+        document.body.appendChild(script);
+    }
+
+    injectScript('https://apis.google.com/js/api.js', 'gapi');
+    injectScript('https://accounts.google.com/gsi/client', 'google');
+}
+
+let signedIn = false;
+
+export async function signin() {
+    console.log("signin")
+    if (signedIn) return console.log("already signed in");
+    await useGapi();
+    await useGoogle();
+    signedIn = true;
+    console.log({ signedIn });
+}
+
 export async function signout() {
+    console.log("signout")
+    if (!signedIn) return console.log("not signed in");
     const token = gapi.client.getToken()
     if (token !== null) {
         google.accounts.oauth2.revoke(token.access_token)
         gapi.client.setToken(null)
+        setInLocalStorage('google', null);
     }
-
+    signedIn = false;
+    console.log({ signedIn });
 }
-
-
