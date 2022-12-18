@@ -16,6 +16,9 @@
 
   let isSignedIn = false
   let albums: Array<gapi.client.photoslibrary.Album> = []
+
+  let activePhotos: Array<gapi.client.photoslibrary.MediaItem>
+
   let photosByDate: Record<
     string,
     Array<gapi.client.photoslibrary.MediaItem>
@@ -35,16 +38,13 @@
 
   let selectedDate: string = ""
 
-  async function loadByDate(
-    e: CustomEvent<{ year: number; month: number; day: number }>
-  ) {
-    const { year, month, day } = e.detail
-    if (!year || !month || !day) {
-      console.log("ignoring date", e.detail)
-      return
-    }
+  async function loadByDate() {
+    const [year, month, day] = selectedDate.split("-").map((s) => parseInt(s))
+
     const photos = await loadAllPhotosByDate([{ year, month, day }])
-    photosByDate[`${year}.${month}.${day}`] = (photos || []).reverse()
+    activePhotos = photosByDate[`${year}.${month}.${day}`] = (
+      photos || []
+    ).reverse()
     photosByDate = photosByDate
   }
 
@@ -52,15 +52,17 @@
 
   function isSaved(image: gapi.client.photoslibrary.MediaItem): boolean {
     if (!backupInfo) return false
-    return backupInfo.some((b) => b.filename == image.filename)
+    const result = backupInfo.some((b) => b.filename == image.filename)
+    console.log("isSaved", image.filename, result)
+    return result
   }
 
   async function uploadMissingPhotos() {
     const missingPhotos = backupInfo.filter((p) => !p.cached)
-    if (missingPhotos.length == 0) return
     console.log("reloading missing photos in background", missingPhotos)
+    if (missingPhotos.length == 0) return
 
-    await signin();
+    await signin()
     missingPhotos.forEach(async (p) => {
       const image = await loadMediaItem(p.id)
       backupImage(image)
@@ -74,7 +76,32 @@
   onMount(async () => {
     selectedDate = localStorage.getItem("selected_date") || ""
     backupInfo = await getBackupInfo()
+    loadByDate()
   })
+
+  function pad(n: number, width = 2, z = 0) {
+    return (String(z).repeat(width) + String(n)).slice(String(n).length)
+  }
+
+  function gotoDay(dayOffset: number) {
+    const [year, month, day] = selectedDate.split("-").map((s) => parseInt(s))
+    const date = new Date(year, month - 1, day)
+    date.setDate(date.getDate() + dayOffset)
+    console.log(selectedDate, date, [year, month, day])
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+      date.getDate()
+    )}`
+  }
+
+  function gotoNextDate() {
+    selectedDate = gotoDay(1)
+    loadByDate()
+  }
+
+  function gotoPriorDate() {
+    selectedDate = gotoDay(-1)
+    loadByDate()
+  }
 </script>
 
 <svelte:head>
@@ -105,20 +132,23 @@
       />
     </section>
   </section>
-  {#if isSignedIn}
+  {#if isSignedIn || true}
     <section class="workspace">
-      {#each Object.entries(photosByDate) as [date, images]}
-        <p>{date}</p>
+      <p>Load photos for a specific date</p>
+      <div class="toolbar">
+        <button on:click={gotoPriorDate}>Prior Date</button>
+        <DatePicker on:change={loadByDate} bind:dateValue={selectedDate} />
+        <button on:click={gotoNextDate}>Next Date</button>
+      </div>
+      {#if activePhotos}
         <div class="simple-grid">
-          {#each images as image}
+          {#each activePhotos as image}
             <div class="relative">
               <Photo {image} saved={isSaved(image)} />
             </div>
           {/each}
         </div>
-      {/each}
-      <DatePicker on:change={loadByDate} bind:dateValue={selectedDate} />
-      <AlbumPanel {albums} />
+      {/if}
     </section>
   {/if}
 </section>

@@ -4,6 +4,11 @@ Svelte demo app that integrates with Google Photos
 
 The purpose is to learn Svelte and the Google API for Google Photos but I also want to build a voice and REPL tool for building collages
 
+## What is next?
+
+* UX: The logo animation needs work...font too large, no transition in sub-title
+* Clicking "Sign In" should present the photo albums as well as the search-by-date
+
 ## Build the scaffolding
 
 I used create vite and followed the prompts, I selected the "Svelte" and "Typescript"

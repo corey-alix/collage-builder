@@ -2,22 +2,21 @@
   import { backupImage, removeImage } from "./photoApi"
 
   export let image: gapi.client.photoslibrary.MediaItem
-  export let saved = true
+  export let saved: boolean = false
 
   let query = 256
-  let isBackup: "" | "ok" | "err" = ""
   let isSaving = false
-
-  $: if (saved) isBackup = "ok"
+  let error = ""
 
   async function deleteImage() {
     isSaving = true
     try {
+      error = ""
       await removeImage(image)
       saved = false
     } catch (ex) {
       console.error(ex)
-      isBackup = "err"
+      error = ex
     }
     isSaving = false
   }
@@ -25,10 +24,11 @@
   async function backup() {
     isSaving = true
     try {
+      error = ""
       saved = await backupImage(image)
     } catch (ex) {
       console.error(ex)
-      isBackup = "err"
+      error = ex
     }
     isSaving = false
   }
@@ -38,19 +38,20 @@
 <div class="grid" tabindex="0">
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <img
+    id={image.id}
     src={`${image.baseUrl}=w${query}`}
     alt={image.filename}
     on:click={() => {}}
   />
+  <div>{error}</div>
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <green-circle
     class="circle"
-    class:hidden={isBackup == "err"}
-    class:ok={isBackup == "ok"}
+    class:hidden={error}
+    class:ok={saved}
     class:is-saving={isSaving}
     on:click={() => {
       if (saved) {
-        isBackup = ""
         deleteImage()
       } else {
         backup()
@@ -60,9 +61,8 @@
   <!-- svelte-ignore a11y-click-events-have-key-events -->
   <red-circle
     class="circle"
-    class:hidden={isBackup !== "err"}
+    class:hidden={!error}
     on:click={() => {
-      isBackup = ""
       backup()
     }}>✗</red-circle
   >

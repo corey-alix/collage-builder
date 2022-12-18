@@ -43,7 +43,7 @@
       class:two-rows={image.mediaMetadata.height > image.mediaMetadata.width}
     >
       <div>
-        <Photo {image} saved={!!backupInfo[image.id]} />
+        <Photo {image} saved={!!backupInfo[image.id]?.cached} />
       </div>
     </div>
   {/each}
